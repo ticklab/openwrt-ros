@@ -1,0 +1,79 @@
+= openwrt ros2 packages
+:toc: auto
+:sectnums: 
+:sectnumlevels: 5
+:toclevels: 5
+
+== Development tool packages
+
+The python3 packages in dev-tools follow the packaging style of
+feeds/packages/lang/python, are built on top of `pypi.mk` and
+`python3-package.mk`, and declare their dependencies based on PyPI metadata.
+
+=== ROS2 build tools
+
+[cols="1,1,3"]
+|===
+| Package | Version | Description
+
+| python3-colcon-common-extensions | 0.3.0 | Meta package of common colcon extensions
+| python3-colcon-mixin | 0.3.2 | colcon CLI mixin extension
+| python3-rosdep | 0.27.0 | ROS dependency management tool
+| python3-vcstool | 0.3.0 | Multi-repository VCS management tool
+|===
+
+=== colcon extension dependencies
+
+[cols="1,1,3"]
+|===
+| Package | Version | Description
+
+| python3-colcon-core | 0.21.3 | colcon core
+| python3-colcon-cmake | 0.2.30 | CMake package support
+| python3-colcon-ros | 0.5.0 | ROS package support
+| python3-colcon-defaults | 0.2.9 | Read defaults from a config file
+| python3-colcon-devtools | 0.3.0 | Information about extension points
+| python3-colcon-library-path | 0.2.1 | Library path environment variable
+| python3-colcon-metadata | 0.3.1 | Read package metadata
+| python3-colcon-notification | 0.3.3 | Status notifications
+| python3-colcon-output | 0.2.15 | Output customization
+| python3-colcon-package-information | 0.4.1 | Package information
+| python3-colcon-package-selection | 0.2.10 | Package selection
+| python3-colcon-parallel-executor | 0.4.0 | Parallel execution
+| python3-colcon-powershell | 0.5.0 | PowerShell scripts
+| python3-colcon-python-setup-py | 0.2.9 | setup.py package support
+| python3-colcon-recursive-crawl | 0.2.3 | Recursive package crawling
+| python3-colcon-test-result | 0.3.8 | Test results
+| python3-colcon-argcomplete | 0.3.3 | Command line completion
+| python3-colcon-bash | 0.5.0 | Bash scripts
+| python3-colcon-cd | 0.1.1 | Change the current directory
+| python3-colcon-zsh | 0.5.0 | Zsh scripts
+| python3-colcon-pkg-config | 0.1.0 | pkg-config environment variable
+|===
+
+=== ROS support libraries
+
+[cols="1,1,3"]
+|===
+| Package | Version | Description
+
+| python3-catkin-pkg | 1.1.1 | catkin package library
+| python3-rospkg | 1.6.3 | ROS package library
+| python3-rosdistro | 1.1.0 | Tools to work with the ROS distribution files
+|===
+
+=== Other Python dependencies
+
+[cols="1,1,3"]
+|===
+| Package | Version | Description
+
+| python3-distlib | 0.4.3 | Distribution utilities
+| python3-distro | 1.9.0 | OS platform information API
+| python3-empy | 4.2.1 | A templating system for Python
+| python3-notify2 | 0.3.1 | Python interface to DBus notifications
+|===
+
+NOTE: colcon/ROS upstream lists testing tools such as pytest as
+install_requires; following OpenWrt packaging conventions, only runtime
+dependencies are kept here and test dependencies are omitted.

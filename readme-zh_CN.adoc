@@ -1,0 +1,77 @@
+= openwrt ros2 软件包
+:toc: auto
+:sectnums: 
+:sectnumlevels: 5
+:toclevels: 5
+
+== 依赖开发工具包
+
+dev-tools 中的 python3 软件包参考 feeds/packages/lang/python 的打包方式，
+基于 `pypi.mk` 与 `python3-package.mk` 构建，依赖按 PyPI 元数据声明。
+
+=== ROS2 构建工具
+
+[cols="1,1,3"]
+|===
+| 软件包 | 版本 | 说明
+
+| python3-colcon-common-extensions | 0.3.0 | colcon 常用扩展元包
+| python3-colcon-mixin | 0.3.2 | colcon CLI mixin 扩展
+| python3-rosdep | 0.27.0 | ROS 依赖管理工具
+| python3-vcstool | 0.3.0 | 多仓库 VCS 管理工具
+|===
+
+=== colcon 扩展依赖
+
+[cols="1,1,3"]
+|===
+| 软件包 | 版本 | 说明
+
+| python3-colcon-core | 0.21.3 | colcon 核心
+| python3-colcon-cmake | 0.2.30 | CMake 包支持
+| python3-colcon-ros | 0.5.0 | ROS 包支持
+| python3-colcon-defaults | 0.2.9 | 默认配置读取
+| python3-colcon-devtools | 0.3.0 | 扩展点信息
+| python3-colcon-library-path | 0.2.1 | 库路径环境变量
+| python3-colcon-metadata | 0.3.1 | 包元数据读取
+| python3-colcon-notification | 0.3.3 | 状态通知
+| python3-colcon-output | 0.2.15 | 输出定制
+| python3-colcon-package-information | 0.4.1 | 包信息
+| python3-colcon-package-selection | 0.2.10 | 包选择
+| python3-colcon-parallel-executor | 0.4.0 | 并行执行
+| python3-colcon-powershell | 0.5.0 | PowerShell 脚本
+| python3-colcon-python-setup-py | 0.2.9 | setup.py 包支持
+| python3-colcon-recursive-crawl | 0.2.3 | 递归遍历
+| python3-colcon-test-result | 0.3.8 | 测试结果
+| python3-colcon-argcomplete | 0.3.3 | 命令行补全
+| python3-colcon-bash | 0.5.0 | Bash 脚本
+| python3-colcon-cd | 0.1.1 | 目录切换
+| python3-colcon-zsh | 0.5.0 | Zsh 脚本
+| python3-colcon-pkg-config | 0.1.0 | pkg-config 环境变量
+|===
+
+=== ROS 支持库
+
+[cols="1,1,3"]
+|===
+| 软件包 | 版本 | 说明
+
+| python3-catkin-pkg | 1.1.1 | catkin 包库
+| python3-rospkg | 1.6.3 | ROS 包库
+| python3-rosdistro | 1.1.0 | ROS 发行版文件工具
+|===
+
+=== 其它 Python 依赖
+
+[cols="1,1,3"]
+|===
+| 软件包 | 版本 | 说明
+
+| python3-distlib | 0.4.3 | 软件包分发工具
+| python3-distro | 1.9.0 | 系统平台信息
+| python3-empy | 4.2.1 | Python 模板系统
+| python3-notify2 | 0.3.1 | DBus 通知接口
+|===
+
+NOTE: 说明：colcon/ROS 上游将 pytest 等测试工具列为 install_requires，
+这里按 OpenWrt 打包惯例仅保留运行时依赖，测试依赖不纳入。
