@@ -4,6 +4,41 @@
 :sectnumlevels: 5
 :toclevels: 5
 
+== ROS2 发行版源码构建
+
+各发行版目录（`humble`、`jazzy`、`lyrical`）提供对应 ROS 2 发行版的源码构建包，
+参考官方 Ubuntu-Development-Setup 流程：使用 `vcs` 导入 `ros2.repos`
+拉取工作区，再用 `colcon` 结合 OpenWrt 工具链交叉编译，
+安装到目标根文件系统的 `/opt/ros/<发行版>`。
+
+[cols="1,2,3"]
+|===
+| 软件包 | 发行版 | 说明
+
+| ros2-humble | Humble Hawksbill | 基于 ros2/ros2 humble 分支源码构建
+| ros2-jazzy | Jazzy Jalisco | 基于 ros2/ros2 jazzy 分支源码构建
+| ros2-lyrical | Lyrical | 基于 ros2/ros2 lyrical 分支源码构建
+|===
+
+说明：
+
+* 源码固定到对应分支的提交，`PKG_MIRROR_HASH` 由 OpenWrt 下载流程生成校验。
+* `Build/Prepare` 通过 `vcs import --retry --skip-existing` 拉取工作区，
+  已存在的仓库不会重复克隆。
+* `Build/Configure` 依据 `files/openwrt-toolchain.cmake.in` 生成 CMake
+  交叉编译工具链文件。
+* `Build/Compile` 调用 `colcon build --executor sequential --merge-install`
+  并传入工具链文件，顺序执行以确保依赖包先完成安装。
+
+=== DDS 中间件选择
+
+`ros2-jazzy` 同时构建 Fast DDS（`rmw_fastrtps_cpp`）与 Cyclone DDS
+（`rmw_cyclonedds_cpp`）两种中间件实现。在 menuconfig 的
+"DDS middleware" -> "Default DDS middleware" 菜单中选择默认实现，
+该选择通过 `RMW_IMPLEMENTATION` CMake 选项传入。默认使用 Fast DDS。
+此选择仅设置默认值，运行时仍可通过 `RMW_IMPLEMENTATION`
+环境变量覆盖。
+
 == 依赖开发工具包
 
 dev-tools 中的 python3 软件包参考 feeds/packages/lang/python 的打包方式，
