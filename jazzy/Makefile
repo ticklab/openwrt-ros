@@ -29,6 +29,7 @@ PKG_BUILD_DEPENDS:= \
 	python3-colcon-common-extensions/host \
 	python3-rosdep/host \
 	python3-pyparsing-host/host \
+	python3-empy4/host \
 	python3-numpy-host/host \
 	python3-lark-host/host \
 	eigen \
@@ -41,7 +42,8 @@ PKG_BUILD_DEPENDS:= \
 	pybind11 \
 	lttng-ust \
 	libcurl \
-	libacl
+	libacl \
+	cpptoml
 
 PKG_BUILD_FLAGS:=no-mips16
 
@@ -103,7 +105,7 @@ define Package/ros2-jazzy
   SUBMENU:=ROS2
   TITLE:=ROS 2 Jazzy Jalisco (source build)
   URL:=https://docs.ros.org/en/jazzy/
-  DEPENDS:=+libstdcpp +python3-light +tinyxml2 +liblz4 +libzstd +lttng-ust +libcurl +libacl \
+  DEPENDS:=+libstdcpp +python3-light +tinyxml2 +liblz4 +libzstd +lttng-ust +libcurl +libacl +cpptoml +python3-empy4 \
 	+libatomic +libopenssl +spdlog +libsqlite3 +orocos-kdl
 endef
 
@@ -212,6 +214,10 @@ define Build/Compile
 			-Dzstd_INCLUDE_DIR=$(STAGING_DIR)/usr/include \
 			-DAsio_INCLUDE_DIR=$(STAGING_DIR)/usr/include \
 			-Dpybind11_DIR=$(STAGING_DIR)/usr/share/cmake/pybind11 \
+			-Dcpptoml_DIR=$(STAGING_DIR)/usr/lib/cmake/cpptoml \
+			-DDOWNLOAD_TOML_LIB=OFF \
+			-DSM_RUN_RESULT=0 \
+			-DSM_RUN_RESULT__TRYRUN_OUTPUT=PTHREAD_RWLOCK_PREFER_READER_NP \
 			-DCURL_LIBRARY=$(STAGING_DIR)/usr/lib/libcurl.so \
 			-DCURL_INCLUDE_DIR=$(STAGING_DIR)/usr/include \
 			-DEigen3_DIR=$(STAGING_DIR)/usr/share/eigen3/cmake \
