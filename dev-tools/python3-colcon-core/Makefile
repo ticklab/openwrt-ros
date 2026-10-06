@@ -12,7 +12,7 @@ PKG_MAINTAINER:=Dirk Thomas <web@dirk-thomas.net>
 PKG_LICENSE:=Apache-2.0
 PKG_LICENSE_FILES:=LICENSE
 
-HOST_BUILD_DEPENDS:=python3/host python-build/host python-installer/host python-wheel/host python-packaging/host python3-distlib/host python3-empy/host
+HOST_BUILD_DEPENDS:=python3/host python-build/host python-installer/host python-wheel/host python-packaging/host python3-distlib/host python3-empy4/host
 
 include $(TOPDIR)/feeds/packages/lang/python/pypi.mk
 include $(INCLUDE_DIR)/package.mk
@@ -26,7 +26,7 @@ define Package/python3-colcon-core
   SUBMENU:=Python
   TITLE:=Command line tool to build sets of software packages
   URL:=https://colcon.readthedocs.io
-  DEPENDS:=+python3-light +python3-distlib +python3-empy +python3-packaging +python3-setuptools
+  DEPENDS:=+python3-light +python3-distlib +python3-empy4 +python3-packaging +python3-setuptools
 endef
 
 define Package/python3-colcon-core/description
