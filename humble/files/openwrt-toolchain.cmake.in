@@ -1,0 +1,42 @@
+# CMake toolchain file for cross-compiling ROS 2 with the OpenWrt toolchain.
+# This file is generated from openwrt-toolchain.cmake.in by the package
+# Makefile; the @...@ placeholders are substituted with OpenWrt variables.
+
+set(CMAKE_SYSTEM_NAME @CMAKE_SYSTEM_NAME@)
+set(CMAKE_SYSTEM_PROCESSOR @CMAKE_SYSTEM_PROCESSOR@)
+
+set(CMAKE_C_COMPILER @CMAKE_C_COMPILER@)
+set(CMAKE_CXX_COMPILER @CMAKE_CXX_COMPILER@)
+set(CMAKE_AR @CMAKE_AR@)
+set(CMAKE_NM @CMAKE_NM@)
+set(CMAKE_RANLIB @CMAKE_RANLIB@)
+
+set(CMAKE_C_FLAGS_INIT "@TARGET_CFLAGS@")
+set(CMAKE_CXX_FLAGS_INIT "@TARGET_CXXFLAGS@")
+# Vendored third-party libraries (spdlog, yaml, console_bridge, ...) are
+# installed under <prefix>/opt/<vendor>/lib; add those directories to the
+# link search path so dependent executables resolve their symbols. Also use
+# them for runtime path resolution (-rpath-link) and RPATH so transitive
+# dependencies are found when linking and at runtime.
+set(CMAKE_EXE_LINKER_FLAGS_INIT "@TARGET_LDFLAGS@ @ROS_VENDOR_LIB_FLAGS@ @ROS_VENDOR_RPATH_LINK_FLAGS@")
+set(CMAKE_SHARED_LINKER_FLAGS_INIT "@TARGET_LDFLAGS@ @ROS_VENDOR_LIB_FLAGS@ @ROS_VENDOR_RPATH_LINK_FLAGS@")
+set(CMAKE_INSTALL_RPATH "@ROS_VENDOR_LIB_DIRS@")
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+
+# Include the colcon install prefix in the root path so that libraries,
+# headers and CMake packages installed by previously built workspace
+# packages are found in addition to the OpenWrt target sysroot.
+set(CMAKE_FIND_ROOT_PATH @CMAKE_FIND_ROOT_PATH@ @ROS_AMENT_PREFIX@)
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM BOTH)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+# Use BOTH so that absolute host include paths (e.g. the host Python NumPy
+# headers passed via Python3_NumPy_INCLUDE_DIRS) are not re-rooted into the
+# sysroot, while target headers are still found under CMAKE_FIND_ROOT_PATH.
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE BOTH)
+# Use BOTH so that CMake config packages installed by the colcon workspace
+# (via CMAKE_PREFIX_PATH) are found in addition to the target sysroot.
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE BOTH)
+
+# OpenWrt packages are built without a sysroot-relative RPATH.
+set(CMAKE_SKIP_RPATH TRUE)
+set(CMAKE_STRIP :)
