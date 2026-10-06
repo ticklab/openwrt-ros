@@ -23,21 +23,44 @@
 说明：
 
 * 源码固定到对应分支的提交，`PKG_MIRROR_HASH` 由 OpenWrt 下载流程生成校验。
-* `Build/Prepare` 通过 `vcs import --retry --skip-existing` 拉取工作区，
-  已存在的仓库不会重复克隆。
+* `Build/Prepare` 将工作区放在 `PKG_BUILD_DIR` 之外，并通过
+  `files/fetch-workspace.sh` 反复执行 `vcs import`，直到不存在未完成
+  （空目录或克隆不完整）的仓库目录，避免临时网络故障破坏工作区。
 * `Build/Configure` 依据 `files/openwrt-toolchain.cmake.in` 生成 CMake
   交叉编译工具链文件。
 * `Build/Compile` 调用 `colcon build --executor sequential --merge-install`
   并传入工具链文件，顺序执行以确保依赖包先完成安装。
+* 生成的 `.ipk` 仅安装 `/opt/ros/<发行版>` 下的运行时部分（不含头文件、
+  源码与 CMake 包配置），并附带 `files/setup.sh`，按目标路径
+  `/opt/ros/<发行版>` 配置环境。
 
 === DDS 中间件选择
 
-`ros2-jazzy` 同时构建 Fast DDS（`rmw_fastrtps_cpp`）与 Cyclone DDS
+各发行版同时构建 Fast DDS（`rmw_fastrtps_cpp`）与 Cyclone DDS
 （`rmw_cyclonedds_cpp`）两种中间件实现。在 menuconfig 的
 "DDS middleware" -> "Default DDS middleware" 菜单中选择默认实现，
 该选择通过 `RMW_IMPLEMENTATION` CMake 选项传入。默认使用 Fast DDS。
 此选择仅设置默认值，运行时仍可通过 `RMW_IMPLEMENTATION`
 环境变量覆盖。
+
+== 系统库
+
+`libs/` 目录提供默认 OpenWrt feeds 中缺失、或需要特定版本的第三方
+C/C++ 库。
+
+[cols="1,1,3"]
+|===
+| 软件包 | 版本 | 说明
+
+| asio | 1.22.1 | 仅头文件的 C++ 网络库（Fast DDS）。固定该版本以保留
+  Humble 的 Fast DDS 2.6.x 所需的已废弃 `asio::io_service` 接口
+| cpptoml | 0.1.1 | 仅头文件的 TOML 解析库，iceoryx 依赖
+| eigen | 3.4.0 | 仅头文件的 C++ 线性代数库
+| orocos-kdl | 1.5.1 | Orocos 运动学与动力学库
+| pybind11 | 2.11.1 | C++/Python 互操作
+| spdlog | 1.12.0 | 快速 C++ 日志库
+| tinyxml2 | 10.0.0 | 小型 C++ XML 解析库
+|===
 
 == 依赖开发工具包
 
@@ -104,9 +127,31 @@ dev-tools 中的 python3 软件包参考 feeds/packages/lang/python 的打包方
 
 | python3-distlib | 0.4.3 | 软件包分发工具
 | python3-distro | 1.9.0 | 系统平台信息
-| python3-empy | 4.2.1 | Python 模板系统
+| python3-empy3 | 3.3.4 | Python 模板系统，empy 3.x 接口（Humble）
+| python3-empy4 | 4.2.1 | Python 模板系统，empy 4.x 接口（Jazzy/Lyrical）
 | python3-notify2 | 0.3.1 | DBus 通知接口
 |===
 
+empy 拆分为两个版本化软件包：Humble 的 `rosidl_adapter` 依赖 empy 3.x
+接口（`em.BUFFERED_OPT` / `em.RAW_OPT`），而 Jazzy/Lyrical 使用 4.x 接口。
+
 NOTE: 说明：colcon/ROS 上游将 pytest 等测试工具列为 install_requires，
 这里按 OpenWrt 打包惯例仅保留运行时依赖，测试依赖不纳入。
+
+=== 仅主机（host-only）辅助包
+
+部分 Python 模块仅在构建期的主机 Python 环境中使用（代码生成或构建
+后端），目标系统不需要，因此打包为仅主机包（安装到
+`staging_dir/hostpkg`）。
+
+[cols="1,1,3"]
+|===
+| 软件包 | 版本 | 说明
+
+| python3-argcomplete-host | 3.2.1 | colcon-argcomplete 扩展在 CLI 启动时导入
+| python3-lark-host | 1.2.2 | rosidl_parser 解析 IDL 文件使用
+| python3-meson-host | 1.5.1 | 为 meson-python 后端提供可导入的 mesonbuild 模块
+| python3-meson-python-host | 0.18.0 | 构建主机 numpy 所用的 PEP 517 后端
+| python3-numpy-host | 2.2.1 | rosidl_generator_py 生成消息时使用
+| python3-pyparsing-host | 3.1.1 | ament_cmake/colcon 运行时经 catkin_pkg 导入
+|===
