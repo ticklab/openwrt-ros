@@ -8,17 +8,23 @@
 # It is header-only and is required to build Fast DDS (fastrtps), which
 # is used by the default ROS 2 RMW implementation.
 #
+# Asio 1.22.1 is used because ROS 2 Humble's Fast DDS 2.6.x relies on the
+# deprecated asio::io_service API, which was removed in newer Asio
+# releases. 1.22.1 still provides both asio::io_service and
+# asio::io_context, so it is also compatible with Jazzy/Lyrical
+# (Fast DDS 2.14).
+#
 
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=asio
-PKG_VERSION:=1.38.2
+PKG_VERSION:=1.22.1
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/chriskohlhoff/asio.git
-PKG_SOURCE_VERSION:=8806a6803cde7054c3049d3666d3ec36786568c5
-PKG_MIRROR_HASH:=3b7dcd6b0a725efd8a97aad97effbb4ee470577a5fcb1d4ba26c1ea641000633
+PKG_SOURCE_VERSION:=bba12d10501418fd3789ce01c9f86a77d37df7ed
+PKG_MIRROR_HASH:=f83140adf4652b501530025a2bdc432632f59b63bed5e5a103102fe14dcf0b98
 
 PKG_MAINTAINER:=OpenWrt ROS feeds
 PKG_LICENSE:=BSL-1.0
