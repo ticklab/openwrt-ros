@@ -60,13 +60,24 @@ ROS 2 distributions.
 
 | asio | 1.22.1 | Header-only C++ networking library (Fast DDS). Pinned to
   keep the deprecated `asio::io_service` API required by Humble's Fast DDS 2.6.x
+| console_bridge | 1.0.2 | Simple C++ logging abstraction required by
+  `console_bridge_vendor` / rosconsole_bridge
 | cpptoml | 0.1.1 | Header-only TOML parser required by iceoryx
 | eigen | 3.4.0 | Header-only C++ linear algebra library
+| foonathan-memory | 0.7.4 | Custom memory allocator used by Fast DDS
+  (`foonathan_memory_vendor`)
 | orocos-kdl | 1.5.1 | Orocos Kinematics and Dynamics Library
 | pybind11 | 2.11.1 | Seamless C++/Python interoperability
 | spdlog | 1.12.0 | Fast C++ logging library
 | tinyxml2 | 10.0.0 | Small C++ XML parser
+| yaml-cpp | 0.8.0 | YAML parser/emitter required by `yaml_cpp_vendor`
+  (>= 0.8.0)
 |===
+
+Upstream `*_vendor` ROS packages download their third-party dependencies from
+the network at build time. Providing these libraries as OpenWrt packages makes
+the ROS 2 build hermetic and reproducible: the vendor packages detect the
+system installation and skip the download step.
 
 == Development tool packages
 

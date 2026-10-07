@@ -54,13 +54,23 @@ C/C++ 库。
 
 | asio | 1.22.1 | 仅头文件的 C++ 网络库（Fast DDS）。固定该版本以保留
   Humble 的 Fast DDS 2.6.x 所需的已废弃 `asio::io_service` 接口
+| console_bridge | 1.0.2 | 简单 C++ 日志抽象库，`console_bridge_vendor` /
+  rosconsole_bridge 依赖
 | cpptoml | 0.1.1 | 仅头文件的 TOML 解析库，iceoryx 依赖
 | eigen | 3.4.0 | 仅头文件的 C++ 线性代数库
+| foonathan-memory | 0.7.4 | Fast DDS 使用的自定义内存分配器
+  （`foonathan_memory_vendor`）
 | orocos-kdl | 1.5.1 | Orocos 运动学与动力学库
 | pybind11 | 2.11.1 | C++/Python 互操作
 | spdlog | 1.12.0 | 快速 C++ 日志库
 | tinyxml2 | 10.0.0 | 小型 C++ XML 解析库
+| yaml-cpp | 0.8.0 | `yaml_cpp_vendor` 所需的 YAML 解析/生成库
+  （>= 0.8.0）
 |===
+
+上游 ROS 的 `*_vendor` 包会在构建时从网络下载第三方依赖。将这些库作为
+OpenWrt 软件包提供后，ROS 2 构建即为封闭且可复现的：vendor 包会检测到
+系统安装并跳过下载步骤。
 
 == 依赖开发工具包
 
