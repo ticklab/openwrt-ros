@@ -4,6 +4,8 @@
 :sectnumlevels: 5
 :toclevels: 5
 
+link:readme.adoc[English]
+
 == ROS2 发行版源码构建
 
 各发行版目录（`ros2-humble`、`ros2-jazzy`、`ros2-lyrical`）提供对应 ROS 2 发行版的源码构建包，

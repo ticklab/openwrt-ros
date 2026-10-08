@@ -4,6 +4,8 @@
 :sectnumlevels: 5
 :toclevels: 5
 
+link:readme-zh_CN.adoc[中文文档]
+
 == ROS 2 distribution source builds
 
 Each distribution directory (`ros2-humble`, `ros2-jazzy`, `ros2-lyrical`) provides a
