@@ -6,7 +6,7 @@
 
 == ROS2 发行版源码构建
 
-各发行版目录（`humble`、`jazzy`、`lyrical`）提供对应 ROS 2 发行版的源码构建包，
+各发行版目录（`ros2-humble`、`ros2-jazzy`、`ros2-lyrical`）提供对应 ROS 2 发行版的源码构建包，
 参考官方 Ubuntu-Development-Setup 流程：使用 `vcs` 导入 `ros2.repos`
 拉取工作区，再用 `colcon` 结合 OpenWrt 工具链交叉编译，
 安装到目标根文件系统的 `/opt/ros/<发行版>`。
@@ -20,12 +20,22 @@
 | ros2-lyrical | Lyrical | 基于 ros2/ros2 lyrical 分支源码构建
 |===
 
+各发行版拆分为核心运行时包与独立的 demo 包：
+
+[cols="1,2,3"]
+|===
+| 核心包 | demo 包 | 说明
+
+| ros2-humble | ros2-humble-demo | 来自 ros2/demos 的示例/教程节点
+| ros2-jazzy | ros2-jazzy-demo | 来自 ros2/demos 的示例/教程节点
+| ros2-lyrical | ros2-lyrical-demo | 来自 ros2/demos 的示例/教程节点
+|===
+
 说明：
 
 * 源码固定到对应分支的提交，`PKG_MIRROR_HASH` 由 OpenWrt 下载流程生成校验。
-* `Build/Prepare` 将工作区放在 `PKG_BUILD_DIR` 之外，并通过
-  `files/fetch-workspace.sh` 反复执行 `vcs import`，直到不存在未完成
-  （空目录或克隆不完整）的仓库目录，避免临时网络故障破坏工作区。
+* `Build/Prepare` 将工作区放在 `PKG_BUILD_DIR` 之外，并执行
+  `vcs import --retry 5 --skip-existing`，避免临时网络故障破坏工作区。
 * `Build/Configure` 依据 `files/openwrt-toolchain.cmake.in` 生成 CMake
   交叉编译工具链文件。
 * `Build/Compile` 调用 `colcon build --executor sequential --merge-install`
@@ -33,6 +43,10 @@
 * 生成的 `.ipk` 仅安装 `/opt/ros/<发行版>` 下的运行时部分（不含头文件、
   源码与 CMake 包配置），并附带 `files/setup.sh`，按目标路径
   `/opt/ros/<发行版>` 配置环境。
+* 两个包由同一次 colcon 构建产出。`ros2/demos` 下各 demo 包的安装文件
+  清单取自 colcon 的 install manifest，被迁入独立的 `<发行版>-demo`
+  `.ipk`，因此核心运行时可以不含 demo/教程节点单独安装。demo 包依赖
+  核心包。
 
 === DDS 中间件选择
 

@@ -104,6 +104,34 @@ ROS_IGNORE_PKGS:= \
 	ros2/demos/image_tools \
 	ros/ros_tutorials
 
+# Demo (tutorial/example) packages built from ros2/demos. Their payload is
+# shipped by the separate ros2-lyrical-demo package rather than by the core
+# ros2-lyrical package. The exact file list of each demo package is taken
+# from the colcon install manifest (CMake packages) or the setup.py
+# install log (Python packages), so only the files that were actually
+# built are moved (packages that were skipped are simply absent).
+ROS2_LYRICAL_DEMO_PKGS:= \
+	action_tutorials_cpp \
+	action_tutorials_py \
+	composition \
+	demo_nodes_cpp \
+	demo_nodes_cpp_native \
+	demo_nodes_py \
+	dummy_map_server \
+	dummy_robot_bringup \
+	dummy_sensors \
+	lifecycle \
+	lifecycle_py \
+	logging_demo \
+	pendulum_control \
+	pendulum_msgs \
+	quality_of_service_demo_cpp \
+	quality_of_service_demo_py \
+	topic_monitor \
+	topic_statistics_demo
+
+ROS2_LYRICAL_DEMO_MANIFESTS:=$(foreach p,$(ROS2_LYRICAL_DEMO_PKGS),$(ROS_WS)/build/$(p)/install_manifest.txt $(ROS_WS)/build/$(p)/install.log)
+
 define Package/ros2-lyrical
   SECTION:=ros
   CATEGORY:=ROS
@@ -137,6 +165,24 @@ define Package/ros2-lyrical/config
 				bool "Cyclone DDS (rmw_cyclonedds_cpp)"
 		endchoice
 	endmenu
+endef
+
+define Package/ros2-lyrical-demo
+  SECTION:=ros
+  CATEGORY:=ROS
+  SUBMENU:=ROS2
+  TITLE:=ROS 2 Lyrical demo and tutorial nodes
+  URL:=https://docs.ros.org/en/lyrical/
+  DEPENDS:=ros2-lyrical
+endef
+
+define Package/ros2-lyrical-demo/description
+  Demo, example and tutorial nodes from the ROS 2 lyrical ros2/demos
+  repository (talker/listener, composition, lifecycle, logging,
+  pendulum, quality of service and topic statistics demos).
+
+  They are built together with the ros2-lyrical package but shipped
+  separately so that the core runtime can be installed without them.
 endef
 
 ifneq ($(CONFIG_ROS2_LYRICAL_RMW_CYCLONEDDS),)
@@ -173,9 +219,9 @@ define Build/Configure
 		-e 's|@TARGET_LDFLAGS@|$(TARGET_LDFLAGS)|g' \
 		-e 's|@ROS_AMENT_PREFIX@|$(ROS_INSTALL_DIR)|g' \
 		-e 's|@HOST_PYTHON_PREFIX@|$(STAGING_DIR_HOSTPKG)|g' \
-		-e 's|@ROS_VENDOR_LIB_FLAGS@|$(shell ls -d $(ROS_INSTALL_DIR)/opt/*/lib 2>/dev/null | sed "s|^|-L|" | tr "\n" " ")|g' \
-		-e 's|@ROS_VENDOR_RPATH_LINK_FLAGS@|$(shell ls -d $(ROS_INSTALL_DIR)/opt/*/lib 2>/dev/null | sed "s|^|-Wl,-rpath-link,|" | tr "\n" " ")|g' \
-		-e 's|@ROS_VENDOR_LIB_DIRS@|$(shell ls -d $(ROS_INSTALL_DIR)/opt/*/lib 2>/dev/null | tr "\n" ";")|g' \
+		-e 's|@ROS_VENDOR_LIB_FLAGS@|$(shell ls -d $(ROS_INSTALL_DIR)/lib $(ROS_INSTALL_DIR)/opt/*/lib 2>/dev/null | sed "s|^|-L|" | tr "\n" " ")|g' \
+		-e 's|@ROS_VENDOR_RPATH_LINK_FLAGS@|$(shell ls -d $(ROS_INSTALL_DIR)/lib $(ROS_INSTALL_DIR)/opt/*/lib 2>/dev/null | sed "s|^|-Wl,-rpath-link,|" | tr "\n" " ")|g' \
+		-e 's|@ROS_VENDOR_LIB_DIRS@|$(shell ls -d $(ROS_INSTALL_DIR)/lib $(ROS_INSTALL_DIR)/opt/*/lib 2>/dev/null | tr "\n" ";")|g' \
 		./files/openwrt-toolchain.cmake.in > $(ROS_TOOLCHAIN_FILE)
 endef
 
@@ -263,6 +309,87 @@ define Package/ros2-lyrical/install
 		$(1)/opt/ros/lyrical/_local_setup_util_sh.py \
 		$(1)/opt/ros/lyrical/_local_setup_util_ps1.py
 	$(INSTALL_BIN) ./files/setup.sh $(1)/opt/ros/lyrical/setup.sh
+	# Drop the demo payload; it is shipped by ros2-lyrical-demo instead.
+	# First remove the files listed in each demo package's colcon install
+	# manifest (bin/, lib/, launch files, ament_index markers, ...).
+	for m in $(ROS2_LYRICAL_DEMO_MANIFESTS); do \
+		[ -f "$$$$m" ] || continue; \
+		while IFS= read -r f; do \
+			case "$$$$f" in \
+				$(ROS_INSTALL_DIR)/*) \
+					rel="$$$${f#$(ROS_INSTALL_DIR)/}"; \
+					rm -f "$(1)/opt/ros/lyrical/$$$$rel"; \
+					rmdir -p --ignore-fail-on-non-empty \
+						"$(1)/opt/ros/lyrical/$$$${rel%/*}" 2>/dev/null || true; \
+				;; \
+			esac; \
+		done < "$$$$m"; \
+	done
+	# Then drop the per-package content that colcon generates outside the
+	# CMake install manifest (colcon-core package markers, package hooks and
+	# Python __pycache__ files) so none of it leaks into the core package.
+	for p in $(ROS2_LYRICAL_DEMO_PKGS); do \
+		rm -f "$(1)/opt/ros/lyrical/share/colcon-core/packages/$$$$p"; \
+		rm -rf "$(1)/opt/ros/lyrical/share/$$$$p"; \
+		rm -rf "$(1)/opt/ros/lyrical/lib/$$$$p"; \
+		rm -f "$(1)/opt/ros/lyrical"/lib/lib"$$$$p"__*.so*; \
+		rm -rf "$(1)/opt/ros/lyrical"/lib/python3.*/site-packages/"$$$$p"; \
+		rm -rf "$(1)/opt/ros/lyrical"/lib/python3.*/site-packages/"$$$$p"-*.egg-info; \
+		rm -f "$(1)/opt/ros/lyrical"/lib/python3.*/site-packages/lib"$$$$p"__*.so; \
+	done
+endef
+
+define Package/ros2-lyrical-demo/install
+	$(INSTALL_DIR) $(1)/opt/ros/lyrical
+	# Install the demo payload listed in the colcon install manifests,
+	# skipping development-only content the same way the core package does:
+	# headers, sources and CMake package configuration.
+	for m in $(ROS2_LYRICAL_DEMO_MANIFESTS); do \
+		[ -f "$$$$m" ] || continue; \
+		while IFS= read -r f; do \
+			case "$$$$f" in \
+				$(ROS_INSTALL_DIR)/include/*|$(ROS_INSTALL_DIR)/src/*|$(ROS_INSTALL_DIR)/lib/cmake/*) \
+					continue; \
+				;; \
+				$(ROS_INSTALL_DIR)/share/*/cmake/*) \
+					continue; \
+				;; \
+				$(ROS_INSTALL_DIR)/share/colcon-core/*) \
+					continue; \
+				;; \
+				$(ROS_INSTALL_DIR)/lib/python3.*/site-packages/*/__pycache__/*) \
+					continue; \
+				;; \
+				$(ROS_INSTALL_DIR)/*) \
+					rel="$$$${f#$(ROS_INSTALL_DIR)/}"; \
+					$(INSTALL_DIR) "$(1)/opt/ros/lyrical/$$$${rel%/*}"; \
+					$(CP) "$$$$f" "$(1)/opt/ros/lyrical/$$$$rel"; \
+				;; \
+			esac; \
+		done < "$$$$m"; \
+	done
+	# Copy the colcon-generated per-package content that is not covered by
+	# the install manifests/logs: colcon-core package markers, package hooks
+	# and the Python egg-info metadata.
+	for p in $(ROS2_LYRICAL_DEMO_PKGS); do \
+		if [ -e "$(ROS_INSTALL_DIR)/share/$$$$p" ]; then \
+			$(INSTALL_DIR) "$(1)/opt/ros/lyrical/share"; \
+			$(CP) "$(ROS_INSTALL_DIR)/share/$$$$p" "$(1)/opt/ros/lyrical/share/"; \
+			rm -rf "$(1)/opt/ros/lyrical/share/$$$$p/cmake"; \
+		fi; \
+		if [ -e "$(ROS_INSTALL_DIR)/share/colcon-core/packages/$$$$p" ]; then \
+			$(INSTALL_DIR) "$(1)/opt/ros/lyrical/share/colcon-core/packages"; \
+			$(INSTALL_BIN) "$(ROS_INSTALL_DIR)/share/colcon-core/packages/$$$$p" \
+				"$(1)/opt/ros/lyrical/share/colcon-core/packages/$$$$p"; \
+		fi; \
+		for e in "$(ROS_INSTALL_DIR)"/lib/python3.*/site-packages/"$$$$p"-*.egg-info; do \
+			[ -e "$$$$e" ] || continue; \
+			d="$$$${e#$(ROS_INSTALL_DIR)/}"; \
+			$(INSTALL_DIR) "$(1)/opt/ros/lyrical/$$$${d%/*}"; \
+			$(CP) "$$$$e" "$(1)/opt/ros/lyrical/$$$$d"; \
+		done; \
+	done
 endef
 
 $(eval $(call BuildPackage,ros2-lyrical))
+$(eval $(call BuildPackage,ros2-lyrical-demo))
